@@ -1,10 +1,19 @@
 # Local-Only Edition (No Docker)
 
-This package is configured for **local development only** using your macOS MongoDB (MongoDB Compass / mongosh) — **no Docker required**. Follow the commands in ChatGPT's message to run everything from VS Code Terminal.
+This package is configured for **local development only** using your macOS MongoDB (MongoDB Compass / mongosh) — **no Docker required**. Follow the commands in This README file  to run everything from VS Code Terminal.
 
-# Task & User Management API
+# Task User API
 
-Production-ready REST API with JWT auth, RBAC, rate limiting, audit logs, Docker.
+Production-ready Task & User Management API (Node.js, Express, MongoDB, JWT, RBAC, rate limiting, audit logs) with local and Docker run modes.
+
+## Quick Start
+
+### Run (Local)
+```bash
+cp .env.example .env         # then edit MONGO_URI and JWT_SECRET
+npm install
+npm run dev                  # http://localhost:8080
+
 
 ## Features
 - JWT authentication (`/auth/register`, `/auth/login`)
@@ -36,11 +45,11 @@ Production-ready REST API with JWT auth, RBAC, rate limiting, audit logs, Docker
 Build and run:
 ```bash
 docker build -t task-user-api .
-docker run --name task-user-api -p 8080:8080 --env-file .env task-user-api
+docker run --name task-user-api -p 3000:3000 --env-file .env task-user-api
 ```
 Or with docker-compose:
 ```bash
-docker compose up --build
+docker compose up --build -d # API http://localhost:3000, Mongo on localhost:27018
 ```
 
 ## Endpoints (base: `/api/v1`)
@@ -69,6 +78,55 @@ curl -X POST http://localhost:8080/api/v1/auth/login -H 'Content-Type: applicati
 TOKEN=...
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/tasks
 ```
+## Seed sample data
+```
+# local server
+npm run seed
+
+# docker API
+BASE_URL=http://localhost:3000 npm run seed
+# or: npm run seed:docker
+```
+## Postman
+
+### Files
+Import these from the `/postman` folder:
+- `postman/Task-User-API.postman_collection.json`
+- `postman/Task-User-API-Local.postman_environment.json` *(no real tokens inside)*
+
+### Setup
+1. Open Postman → **Import** the two files above.  
+2. In the top-right, select environment **Task User API (Local)**.  
+   - Local base URL: `http://localhost:8080`  
+   - If using Docker, create/select an environment with `baseUrl = http://localhost:3000`.
+
+### Quick workflow
+1. **Health** → `GET /health` (sanity check).  
+2. **Auth → POST /auth/register (admin)** – run once to create an admin.  
+3. **Auth → POST /auth/login (capture token)** – click **Send**.  
+   - The request’s **Tests** script saves `{{token}}` for the rest of the collection.  
+4. Use **Users** and **Tasks** requests normally (they send `Authorization: Bearer {{token}}`).  
+5. Try **Reports**:  
+   - `GET /reports/task-status`  
+   - `GET /reports/user-performance`
+
+### Environment variables
+- `{{baseUrl}}` – `http://localhost:8080` (or `http://localhost:3000` for Docker)
+- `{{token}}` – auto-filled after login
+- `{{userId}}`, `{{taskId}}` – set these from previous responses to drive `/:id` routes
+
+### (Optional) Helpful Tests snippets
+
+**Save `token` on login (already included in collection):**
+```js
+// Tests tab of Auth → POST /auth/login
+let data = {};
+try { data = pm.response.json(); } catch (e) {}
+if (data && data.token) {
+  pm.environment.set('token', data.token);
+  pm.collectionVariables.set('token', data.token);
+}
+
 
 ## Folder Structure
 ```
