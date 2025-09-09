@@ -87,4 +87,3 @@ src/
 - Validation rules live in `src/validators`.
 - Add tests if required.
 ```
-

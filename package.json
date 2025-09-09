@@ -5,11 +5,14 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "lint": "echo \"(add eslint if you want)\""
-  },
+  "dev": "nodemon server.js",
+  "start": "node server.js",
+  "lint": "echo \"(add eslint if you want)\"",
+  "seed": "node scripts/seed.js",
+  "seed:docker": "BASE_URL=http://localhost:3000 node scripts/seed.js"
+},
   "dependencies": {
+    "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
@@ -30,4 +33,5 @@
   "devDependencies": {
     "nodemon": "^3.1.7"
   }
+  
 }
